@@ -1,29 +1,30 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { CircularProgress } from '@mui/material';
 
+import { useAxios } from '../../hooks/useAxios';
 import Opener from '../../shared/layouts/opener/Opener';
 import CharacterCard from '../../shared/components/characterCard/CharacterCard';
 
 import { Box, Container, Wrapper } from './Characters.styled';
 
 export const Characters = () => {
+  const { request } = useAxios();
+  const targetRef = useRef(null);
+
   const [characterData, setCharacterData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
 
   //   fetching process
-  const dataFetcher = async () => {
+  const characterFetcher = async () => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(
-        `https://rickandmortyapi.com/api/character/?page=${page}`
-      );
-      const data = await response?.json();
+      const response = await request({ url: `/character/?page=${page}` });
 
-      setCharacterData((prevItems) => [...prevItems, ...data?.results]);
+      setCharacterData((prev) => [...prev, ...response?.results]);
       setPage((prevPage) => prevPage + 1);
     } catch (error) {
       setError(error);
@@ -32,29 +33,30 @@ export const Characters = () => {
     }
   };
 
-  useEffect(() => {
-    dataFetcher();
-  }, []);
-
   // infinite scroll logic
-  const handleScroll = () => {
-    if (
-      window.innerHeight + document.documentElement.scrollTop !==
-        document.documentElement.offsetHeight ||
-      isLoading
-    ) {
-      return;
-    }
-    dataFetcher();
-  };
-
   useEffect(() => {
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [isLoading]);
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && !isLoading) {
+          characterFetcher();
+        }
+      });
+    });
+
+    if (targetRef.current) {
+      observer.observe(targetRef.current);
+    }
+
+    // Cleanup the observer
+    return () => {
+      if (targetRef.current) {
+        observer.unobserve(targetRef.current);
+      }
+    };
+  }, [page]);
 
   return (
-    <>
+    <div>
       <Opener title={'Characters'} />
       <Wrapper>
         <Container>
@@ -75,11 +77,14 @@ export const Characters = () => {
               );
             })}
           </Box>
+
+          {/* intersection */}
+          <Container.IntersectionObserverDiv ref={targetRef} />
           {isLoading && <CircularProgress />}
           {error && <p>Error: {error.message}</p>}
         </Container>
       </Wrapper>
-    </>
+    </div>
   );
 };
 

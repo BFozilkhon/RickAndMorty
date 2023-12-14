@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useLayoutEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { CircularProgress } from '@mui/material';
 
@@ -7,6 +7,9 @@ import Navbar from '../layouts/navbar/Navbar';
 import { mainRoutes } from './utils/mainRoutes';
 
 const Pages = () => {
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0);
+  });
   return (
     <Suspense fallback={<CircularProgress />}>
       <Navbar />

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
+import { useAxios } from '../../hooks/useAxios';
 import Main from './main/Main';
 import Sidebar from './sidebar/Sidebar';
 import Opener from '../../shared/layouts/opener/Opener';
@@ -7,16 +8,17 @@ import Opener from '../../shared/layouts/opener/Opener';
 import { Wrapper } from './Episode.styled';
 
 export const Episode = () => {
+  const { request } = useAxios();
+
   const [allEpisodeData, setAllEpisodeData] = useState([]);
 
-  const fetchAllEpisode = async () => {
-    await fetch('https://rickandmortyapi.com/api/episode')
-      .then((res) => res.json())
-      .then((res) => setAllEpisodeData(res?.results));
+  const allEpisodesFetcher = async () => {
+    const response = await request({ url: '/episode' });
+    setAllEpisodeData(response?.results);
   };
 
   useEffect(() => {
-    fetchAllEpisode();
+    allEpisodesFetcher();
   }, []);
 
   return (

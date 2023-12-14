@@ -11,7 +11,7 @@ const DragAndDrop = () => {
     useCharacterTodoContext();
 
   const handleDragAndDrop = (results) => {
-    const { source, destination, type } = results;
+    const { source, destination } = results;
 
     if (!destination) return;
 
@@ -21,17 +21,6 @@ const DragAndDrop = () => {
     )
       return;
 
-    if (type === 'group') {
-      const reorderedStores = [...stores];
-
-      const storeSourceIndex = source.index;
-      const storeDestinatonIndex = destination.index;
-
-      const [removedStore] = reorderedStores.splice(storeSourceIndex, 1);
-      reorderedStores.splice(storeDestinatonIndex, 0, removedStore);
-
-      return setStores(reorderedStores);
-    }
     const itemSourceIndex = source.index;
     const itemDestinationIndex = destination.index;
 

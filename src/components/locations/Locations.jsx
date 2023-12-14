@@ -1,36 +1,29 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import Pagination from '@mui/material/Pagination';
 
+import { useAxios } from '../../hooks/useAxios';
 import Opener from '../../shared/layouts/opener/Opener';
 import LocationCard from './card/LocationCard';
 
 import { Box, Wrapper } from './Locations.styled';
 
 const Locations = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const { request } = useAxios();
 
-  const [locationPageApi, setLocationPageApi] = useState(
-    parseInt(location.search.at(-1)) || 1
-  );
+  const [searchParams, setSearchParams] = useSearchParams();
+  const page = searchParams.get('page');
+
   const [locationData, setLocationData] = useState([]);
 
-  //   searchParams
-  const baseUrl = 'https://rickandmortyapi.com/api/location';
-  const url = new URL(baseUrl);
-  url.searchParams.set('page', locationPageApi);
-
   const locationFetcher = async () => {
-    await fetch(url.toString())
-      .then((res) => res.json())
-      .then((res) => setLocationData(res?.results));
+    const response = await request({ url: `/location?page=${page}` });
+    setLocationData(response?.results);
   };
 
   useEffect(() => {
     locationFetcher();
-    navigate(`/locations?page=${locationPageApi}`);
-  }, [locationPageApi]);
+  }, [searchParams]);
 
   return (
     <>
@@ -50,11 +43,11 @@ const Locations = () => {
         </Box>
         <Pagination
           onChange={(e, value) => {
-            setLocationPageApi(value);
+            setSearchParams({ page: value });
           }}
           className='pagination'
           count={7}
-          page={locationPageApi}
+          page={parseInt(page)}
           variant='outlined'
           shape='rounded'
         />
